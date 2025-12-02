@@ -39,42 +39,54 @@ class QuestProvider extends ChangeNotifier {
   List<Quest> _mainQuests = [
     Quest(
       id: 'main_jumps',
-      name: 'Jumps',
+      name: 'The First Leap',
       type: AppConstants.questTypeJumping,
       target: 10,
       current: 0,
       iconPath: 'assets/images/char_jumping.png',
       description: 'Do 10 vertical jumps',
+      chapterTitle: 'Chapter 1: Awakening',
+      storyDescription:
+          'You wake up in a strange world. Your legs feel heavy, but you must move. Jump to test your strength!',
     ),
     Quest(
       id: 'main_situp',
-      name: 'Sit Up',
+      name: 'Core of Steel',
       type: 'Sit Up',
       target: 15,
       current: 0,
       iconPath: 'assets/images/char_pushup.png',
       description: 'Do sit-ups and stretches',
       isLocked: true,
+      chapterTitle: 'Chapter 2: Resilience',
+      storyDescription:
+          'The path ahead is blocked by a fallen tree. You need core strength to lift it. Train your abs!',
     ),
     Quest(
       id: 'main_pushup',
-      name: 'Push Up',
+      name: 'Push Through',
       type: AppConstants.questTypePushUp,
       target: 20,
       current: 0,
       iconPath: 'assets/images/char_pushup.png',
       description: 'Do complex and intense',
       isLocked: true,
+      chapterTitle: 'Chapter 3: Power',
+      storyDescription:
+          'A giant boulder blocks the cave entrance. Only raw power can move it. Push your limits!',
     ),
     Quest(
       id: 'main_run',
-      name: 'Run',
+      name: 'The Great Escape',
       type: AppConstants.questTypeRunning,
       target: 5,
       current: 0,
       iconPath: 'assets/images/char_running.png',
       description: 'Run for endurance',
       isLocked: true,
+      chapterTitle: 'Chapter 4: Freedom',
+      storyDescription:
+          'The beast is chasing you! Run as fast as you can to escape the forest and find freedom.',
     ),
   ];
 
@@ -95,9 +107,19 @@ class QuestProvider extends ChangeNotifier {
     // Update main quests
     final mainIndex = _mainQuests.indexWhere((q) => q.id == questId);
     if (mainIndex != -1) {
-      _mainQuests[mainIndex] = _mainQuests[mainIndex].copyWith(
+      final updatedQuest = _mainQuests[mainIndex].copyWith(
         current: newCurrent,
       );
+      _mainQuests[mainIndex] = updatedQuest;
+
+      // Check if quest is completed and unlock the next one
+      if (updatedQuest.isCompleted && mainIndex < _mainQuests.length - 1) {
+        final nextQuest = _mainQuests[mainIndex + 1];
+        if (nextQuest.isLocked) {
+          _mainQuests[mainIndex + 1] = nextQuest.copyWith(isLocked: false);
+        }
+      }
+
       notifyListeners();
     }
   }

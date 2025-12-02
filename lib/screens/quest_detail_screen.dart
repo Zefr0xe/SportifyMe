@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../models/quest.dart';
 import '../providers/quest_provider.dart';
 import '../utils/colors.dart';
 import '../widgets/progress_bar.dart';
+import 'activity_tracking_screen.dart';
 
 class QuestDetailScreen extends StatelessWidget {
   const QuestDetailScreen({super.key});
@@ -25,7 +27,7 @@ class QuestDetailScreen extends StatelessWidget {
       body: Consumer<QuestProvider>(
         builder: (context, questProvider, child) {
           final mainQuests = questProvider.mainQuests;
-          
+
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -64,7 +66,7 @@ class QuestDetailScreen extends StatelessWidget {
                   final index = entry.key;
                   final quest = entry.value;
                   final isLast = index == mainQuests.length - 1;
-                  
+
                   return _buildTimelineItem(
                     context,
                     quest: quest,
@@ -93,94 +95,146 @@ class QuestDetailScreen extends StatelessWidget {
     required quest,
     required bool isLast,
   }) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Timeline indicator
-        Column(
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: quest.isLocked 
-                    ? AppColors.textSecondary.withOpacity(0.3)
-                    : AppColors.cardBorder,
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: AppColors.darkCyan,
-                  width: 3,
-                ),
-              ),
-              child: Icon(
-                quest.isLocked ? Icons.lock : Icons.fitness_center,
-                color: quest.isLocked ? AppColors.textSecondary : Colors.white,
-                size: 20,
+    return GestureDetector(
+      onTap: () {
+        if (!quest.isLocked) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ActivityTrackingScreen(
+                questId: quest.id,
               ),
             ),
-            if (!isLast)
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Complete previous quest to unlock!'),
+              duration: Duration(seconds: 1),
+            ),
+          );
+        }
+      },
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Timeline indicator
+          Column(
+            children: [
               Container(
-                width: 3,
-                height: 60,
-                color: AppColors.cardBorder.withOpacity(0.5),
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: quest.isLocked
+                      ? AppColors.primaryCyan.withOpacity(0.5)
+                      : AppColors.primaryCyan,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: quest.isLocked
+                        ? AppColors.textSecondary.withOpacity(0.5)
+                        : AppColors.darkCyan,
+                    width: 3,
+                  ),
+                  boxShadow: !quest.isLocked
+                      ? [
+                          BoxShadow(
+                            color: AppColors.darkCyan.withOpacity(0.4),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          )
+                        ]
+                      : [],
+                ),
+                child: Icon(
+                  quest.isLocked ? Icons.lock : Icons.fitness_center,
+                  color:
+                      quest.isLocked ? AppColors.textSecondary : Colors.white,
+                  size: 20,
+                ),
               ),
-          ],
-        ),
-        const SizedBox(width: 16),
-        // Quest info
-        Expanded(
-          child: Container(
-            margin: const EdgeInsets.only(bottom: 16),
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: quest.isLocked
-                  ? AppColors.cardBackground.withOpacity(0.5)
-                  : AppColors.cardBackground,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
+              if (!isLast)
+                Container(
+                  width: 3,
+                  height: 80, // Increased height for better spacing
+                  color: AppColors.darkCyan.withOpacity(0.3),
+                ),
+            ],
+          ),
+          const SizedBox(width: 16),
+          // Quest info
+          Expanded(
+            child: Container(
+              margin: const EdgeInsets.only(bottom: 16),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
                 color: quest.isLocked
-                    ? AppColors.textSecondary.withOpacity(0.3)
-                    : AppColors.cardBorder,
-                width: 2,
+                    ? const Color(0xFF0088AA) // Darker/Locked color
+                    : const Color(0xFF006699), // Active card color
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: quest.isLocked
+                      ? Colors.transparent
+                      : AppColors.cardBorder,
+                  width: 2,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    offset: const Offset(0, 4),
+                    blurRadius: 0,
+                  ),
+                ],
               ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  quest.name,
-                  style: TextStyle(
-                    color: quest.isLocked
-                        ? AppColors.textSecondary
-                        : AppColors.textPrimary,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        quest.name,
+                        style: TextStyle(
+                          color: quest.isLocked
+                              ? Colors.white.withOpacity(0.7)
+                              : Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Pixel',
+                        ),
+                      ),
+                      if (quest.isCompleted)
+                        const Icon(Icons.check_circle,
+                            color: AppColors.coinYellow, size: 20),
+                    ],
                   ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  quest.description ?? 'Complete this quest',
-                  style: TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 12,
+                  const SizedBox(height: 4),
+                  Text(
+                    quest.description ?? 'Complete this quest',
+                    style: TextStyle(
+                      color: quest.isLocked
+                          ? Colors.white.withOpacity(0.5)
+                          : Colors.white.withOpacity(0.8),
+                      fontSize: 12,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  '${quest.current} / ${quest.target}',
-                  style: TextStyle(
-                    color: quest.isLocked
-                        ? AppColors.textSecondary
-                        : AppColors.coinYellow,
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
+                  const SizedBox(height: 12),
+                  Text(
+                    '${quest.current} / ${quest.target}',
+                    style: TextStyle(
+                      color: quest.isLocked
+                          ? Colors.white.withOpacity(0.5)
+                          : AppColors.coinYellow,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Pixel',
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

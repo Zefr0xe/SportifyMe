@@ -19,7 +19,12 @@ class Quest {
     this.isLocked = false,
     this.description,
     this.reward,
+    this.chapterTitle,
+    this.storyDescription,
   });
+
+  final String? chapterTitle;
+  final String? storyDescription;
 
   double get progress => target > 0 ? (current / target).clamp(0.0, 1.0) : 0.0;
   bool get isCompleted => current >= target;
@@ -34,6 +39,8 @@ class Quest {
     bool? isLocked,
     String? description,
     int? reward,
+    String? chapterTitle,
+    String? storyDescription,
   }) {
     return Quest(
       id: id ?? this.id,
@@ -45,6 +52,8 @@ class Quest {
       isLocked: isLocked ?? this.isLocked,
       description: description ?? this.description,
       reward: reward ?? this.reward,
+      chapterTitle: chapterTitle ?? this.chapterTitle,
+      storyDescription: storyDescription ?? this.storyDescription,
     );
   }
 }
